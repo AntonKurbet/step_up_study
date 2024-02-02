@@ -1,0 +1,237 @@
+Account.java
+-------
+
+package inno.tech;
+
+import lombok.Getter;
+
+import java.math.BigDecimal;
+import java.security.InvalidParameterException;
+import java.util.HashMap;
+import java.util.InvalidPropertiesFormatException;
+import java.util.Map;
+import java.util.Stack;
+
+public class Account {
+
+    @Getter
+    private String owner;
+    @Getter
+    private Map<Currency, BigDecimal> balance;
+    private Stack<Operation> history;
+
+    private Account() {
+    }
+
+    public Account(String owner) throws InvalidPropertiesFormatException {
+        setOwner(owner);
+        balance = new HashMap<>();
+        history = new Stack<>();
+    }
+
+    public void setCurrencyBalance(Currency currency, BigDecimal balance) {
+        if (balance.compareTo(BigDecimal.ZERO) < 0) throw new InvalidParameterException("Balance is negative");
+        if (this.balance.get(currency) == null) {
+            history.push(new RemoveCurrency(currency));
+        } else {
+            history.push(new SetBalance(currency,this.balance.get(currency)));
+        }
+        this.balance.put(currency,balance);
+    }
+
+    public void setOwner(String owner) throws InvalidPropertiesFormatException {
+        if (owner == null || owner.isEmpty()) throw new InvalidPropertiesFormatException("owner is blank");
+        if (this.owner != null) {
+            history.push(new SetOwner(this.owner));
+        }
+        this.owner = owner;
+    }
+
+    public void undo() throws InvalidPropertiesFormatException {
+        if (history != null && !history.isEmpty()) {
+            Operation undo = history.pop();
+            undo.execute(this);
+            if (!history.empty()) history.pop();
+        }
+    }
+
+    public boolean canUndo() {
+        return !history.empty();
+    }
+
+    public AccountState save() {
+        return new AccountState(owner, new HashMap<>(balance));
+    }
+
+    public void restore(AccountState state) {
+        this.owner = state.getOwner();
+        this.balance = new HashMap<>(state.getBalance());
+    }
+}
+
+AccountState.java
+-------
+package inno.tech;
+
+import lombok.Getter;
+
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
+
+@Getter
+public class AccountState {
+    private final String owner;
+    private final Map<Currency, BigDecimal> balance;
+
+    public AccountState(String owner, HashMap<Currency, BigDecimal> balance) {
+        this.owner = owner;
+        this.balance = balance;
+    }
+}
+
+Currency.java
+--------
+package inno.tech;
+
+public enum Currency {
+    RUB,USD,EUR
+}
+
+Operation.java
+-------
+package inno.tech;
+
+import java.util.InvalidPropertiesFormatException;
+
+@FunctionalInterface
+public interface Operation {
+    void execute(Account account) throws InvalidPropertiesFormatException;
+}
+
+RemoveCurrency.java
+--------
+package inno.tech;
+
+import lombok.AllArgsConstructor;
+
+@AllArgsConstructor
+public class RemoveCurrency implements Operation{
+
+    private Currency currency;
+    @Override
+    public void execute(Account account) {
+        account.getBalance().remove(currency);
+    }
+}
+
+SetBalance.java
+--------
+package inno.tech;
+
+import lombok.AllArgsConstructor;
+
+import java.math.BigDecimal;
+
+@AllArgsConstructor
+public class SetBalance implements Operation {
+    private Currency currency;
+    private BigDecimal balance;
+
+    @Override
+    public void execute(Account account) {
+        account.setCurrencyBalance(currency, balance);
+    }
+}
+
+SetOwner.java
+------
+package inno.tech;
+
+import lombok.AllArgsConstructor;
+
+import java.util.InvalidPropertiesFormatException;
+
+@AllArgsConstructor
+public class SetOwner implements Operation{
+    private String owner;
+
+    @Override
+    public void execute(Account account) throws InvalidPropertiesFormatException {
+        account.setOwner(owner);
+    }
+}
+
+AccountTest.java
+--------
+import inno.tech.Account;
+import lombok.SneakyThrows;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.security.InvalidParameterException;
+import java.util.InvalidPropertiesFormatException;
+
+import static inno.tech.Currency.EUR;
+import static inno.tech.Currency.RUB;
+import static inno.tech.Currency.USD;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+public class AccountTest {
+    @Test
+    @SneakyThrows
+    void happyTest() {
+
+        var account = new Account("Bob");
+        assertEquals(account.getOwner(), "Bob");
+        assertFalse(account.canUndo());
+        account.setCurrencyBalance(RUB, BigDecimal.valueOf(100));
+        assertEquals(account.getBalance().get(RUB), BigDecimal.valueOf(100));
+        assertTrue(account.canUndo());
+        account.undo();
+        assertNull(account.getBalance().get(RUB));
+        account.setCurrencyBalance(EUR, BigDecimal.valueOf(100));
+        account.setCurrencyBalance(EUR, BigDecimal.valueOf(200));
+        account.undo();
+        account.undo();
+        assertNull(account.getBalance().get(EUR));
+        account.setOwner("Bill");
+        assertEquals(account.getOwner(), "Bill");
+        account.undo();
+        assertEquals(account.getOwner(), "Bob");
+    }
+
+    @Test
+    @SneakyThrows
+    void unhappyTest() {
+        assertThrows(InvalidPropertiesFormatException.class, () -> new Account(""));
+        var account = new Account("Bob");
+        assertThrows(InvalidParameterException.class, () -> account.setCurrencyBalance(USD, BigDecimal.valueOf(-1)));
+    }
+
+    @Test
+    @SneakyThrows
+    void stateTest() {
+        var account = new Account("Bob");
+        account.setCurrencyBalance(RUB,BigDecimal.valueOf(100));
+        var state = account.save();
+        account.setCurrencyBalance(USD,BigDecimal.valueOf(200));
+        account.setOwner("Bill");
+        account.restore(state);
+        assertEquals(account.getOwner(),"Bob");
+        assertEquals(account.getBalance().get(RUB), BigDecimal.valueOf(100));
+        assertNull(account.getBalance().get(EUR));
+        assertNull(account.getBalance().get(USD));
+    }
+}
+
+
+
+
+
+
+
