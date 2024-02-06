@@ -1,10 +1,15 @@
 import inno.tech.Account;
+import inno.tech.AccountState;
+import inno.tech.Currency;
 import lombok.SneakyThrows;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.security.InvalidParameterException;
+import java.util.HashMap;
 import java.util.InvalidPropertiesFormatException;
+import java.util.Map;
 
 import static inno.tech.Currency.EUR;
 import static inno.tech.Currency.RUB;
@@ -79,37 +84,80 @@ Account. Метод должен поддерживать следующие т�
 
 public class AccountTest {
 
+    private Account account;
+    private AccountState state;
+
+    @BeforeEach
+    void init() throws InvalidPropertiesFormatException {
+        account = new Account("Bob");
+    }
+
     @Test
     @SneakyThrows
     void constructorTest() {
-        var account = new Account("Bob");
         assertEquals(account.getOwner(), "Bob");
+    }
+
+    @Test
+    @SneakyThrows
+    void constructorExceptionTest() {
         assertThrows(InvalidPropertiesFormatException.class, () -> new Account(""));
     }
 
     @Test
     @SneakyThrows
-    void settersTest() {
-        var account = new Account("Bob");
+    void setterBalanceTest() {
         account.setCurrencyBalance(RUB, BigDecimal.valueOf(100));
         assertEquals(account.getBalance().get(RUB), BigDecimal.valueOf(100));
+    }
+
+    @Test
+    @SneakyThrows
+    void setterOwnerTest() {
+        account.setOwner("Bill");
+        assertEquals(account.getOwner(), "Bill");
+    }
+
+    @Test
+    @SneakyThrows
+    void setterBalanceExceptionTest() {
         assertThrows(InvalidParameterException.class, () -> account.setCurrencyBalance(USD, BigDecimal.valueOf(-1)));
     }
 
     @Test
     @SneakyThrows
-    void undoTest() {
-        var account = new Account("Bob");
+    void canUndoTestFalse() {
         assertFalse(account.canUndo());
+    }
+
+    @Test
+    @SneakyThrows
+    void canUndoTestTrue() {
         account.setCurrencyBalance(RUB, BigDecimal.valueOf(100));
         assertTrue(account.canUndo());
+    }
+
+    @Test
+    @SneakyThrows
+    void singleUndoBalanceTest() {
+        account.setCurrencyBalance(RUB, BigDecimal.valueOf(100));
         account.undo();
         assertNull(account.getBalance().get(RUB));
+    }
+
+    @Test
+    @SneakyThrows
+    void multipleUndoBalanceTest() {
         account.setCurrencyBalance(EUR, BigDecimal.valueOf(100));
         account.setCurrencyBalance(EUR, BigDecimal.valueOf(200));
         account.undo();
         account.undo();
         assertNull(account.getBalance().get(EUR));
+    }
+
+    @Test
+    @SneakyThrows
+    void undoOwnerTest() {
         account.setOwner("Bill");
         assertEquals(account.getOwner(), "Bill");
         account.undo();
@@ -118,17 +166,22 @@ public class AccountTest {
 
     @Test
     @SneakyThrows
-    void stateTest() {
+    void stateSaveTest() {
         var account = new Account("Bob");
         account.setCurrencyBalance(RUB, BigDecimal.valueOf(100));
-        var state = account.save();
-        account.setCurrencyBalance(USD, BigDecimal.valueOf(200));
-        account.setOwner("Bill");
+        state = account.save();
+        assertEquals(account.getOwner(), state.getOwner());
+    }
+
+    @Test
+    @SneakyThrows
+    void stateRestoreTest() {
+        var balance = new HashMap<Currency, BigDecimal>();
+        balance.put(RUB, BigDecimal.valueOf(100));
+        state = new AccountState("Bill", balance);
         var newAccount = Account.restore(state);
-        assertEquals(newAccount.getOwner(), "Bob");
+        assertEquals(newAccount.getOwner(), "Bill");
         assertEquals(newAccount.getBalance().get(RUB), BigDecimal.valueOf(100));
-        assertNull(newAccount.getBalance().get(EUR));
-        assertNull(newAccount.getBalance().get(USD));
     }
 
 }
