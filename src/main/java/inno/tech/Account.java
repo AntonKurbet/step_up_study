@@ -4,18 +4,18 @@ import lombok.Getter;
 
 import java.math.BigDecimal;
 import java.security.InvalidParameterException;
+import java.util.ArrayDeque;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.InvalidPropertiesFormatException;
 import java.util.Map;
-import java.util.Stack;
 
 public class Account {
 
     @Getter
     private String owner;
-    @Getter
     private Map<Currency, BigDecimal> balance;
-    private Stack<Operation> history;
+    private ArrayDeque<Operation> history;
 
     private Account() {
     }
@@ -23,7 +23,11 @@ public class Account {
     public Account(String owner) throws InvalidPropertiesFormatException {
         setOwner(owner);
         balance = new HashMap<>();
-        history = new Stack<>();
+        history = new ArrayDeque<>();
+    }
+
+    public Map<Currency, BigDecimal> getBalance() {
+        return Collections.unmodifiableMap(balance);
     }
 
     public void setCurrencyBalance(Currency currency, BigDecimal balance) {
@@ -31,9 +35,13 @@ public class Account {
         if (this.balance.get(currency) == null) {
             history.push(new RemoveCurrency(currency));
         } else {
-            history.push(new SetBalance(currency,this.balance.get(currency)));
+            history.push(new SetBalance(currency, this.balance.get(currency)));
         }
-        this.balance.put(currency,balance);
+        if (balance.equals(BigDecimal.ZERO)) {
+            this.balance.remove(currency);
+        } else {
+            this.balance.put(currency, balance);
+        }
     }
 
     public void setOwner(String owner) throws InvalidPropertiesFormatException {
@@ -48,20 +56,23 @@ public class Account {
         if (history != null && !history.isEmpty()) {
             Operation undo = history.pop();
             undo.execute(this);
-            if (!history.empty()) history.pop();
+            if (!history.isEmpty()) history.pop();
         }
     }
 
     public boolean canUndo() {
-        return !history.empty();
+        return !history.isEmpty();
     }
 
     public AccountState save() {
         return new AccountState(owner, new HashMap<>(balance));
     }
 
-    public void restore(AccountState state) {
-        this.owner = state.getOwner();
-        this.balance = new HashMap<>(state.getBalance());
+    public static Account restore(AccountState state) throws InvalidPropertiesFormatException {
+        var result = new Account(state.getOwner());
+        for (var e : state.getBalance().entrySet()) {
+            result.setCurrencyBalance(e.getKey(), e.getValue());
+        }
+        return result;
     }
 }

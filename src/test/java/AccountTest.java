@@ -78,15 +78,30 @@ Account. Метод должен поддерживать следующие т�
  */
 
 public class AccountTest {
+
     @Test
     @SneakyThrows
-    void happyTest() {
-
+    void constructorTest() {
         var account = new Account("Bob");
         assertEquals(account.getOwner(), "Bob");
-        assertFalse(account.canUndo());
+        assertThrows(InvalidPropertiesFormatException.class, () -> new Account(""));
+    }
+
+    @Test
+    @SneakyThrows
+    void settersTest() {
+        var account = new Account("Bob");
         account.setCurrencyBalance(RUB, BigDecimal.valueOf(100));
         assertEquals(account.getBalance().get(RUB), BigDecimal.valueOf(100));
+        assertThrows(InvalidParameterException.class, () -> account.setCurrencyBalance(USD, BigDecimal.valueOf(-1)));
+    }
+
+    @Test
+    @SneakyThrows
+    void undoTest() {
+        var account = new Account("Bob");
+        assertFalse(account.canUndo());
+        account.setCurrencyBalance(RUB, BigDecimal.valueOf(100));
         assertTrue(account.canUndo());
         account.undo();
         assertNull(account.getBalance().get(RUB));
@@ -103,25 +118,17 @@ public class AccountTest {
 
     @Test
     @SneakyThrows
-    void unhappyTest() {
-        assertThrows(InvalidPropertiesFormatException.class, () -> new Account(""));
-        var account = new Account("Bob");
-        assertThrows(InvalidParameterException.class, () -> account.setCurrencyBalance(USD, BigDecimal.valueOf(-1)));
-    }
-
-    @Test
-    @SneakyThrows
     void stateTest() {
         var account = new Account("Bob");
-        account.setCurrencyBalance(RUB,BigDecimal.valueOf(100));
+        account.setCurrencyBalance(RUB, BigDecimal.valueOf(100));
         var state = account.save();
-        account.setCurrencyBalance(USD,BigDecimal.valueOf(200));
+        account.setCurrencyBalance(USD, BigDecimal.valueOf(200));
         account.setOwner("Bill");
-        account.restore(state);
-        assertEquals(account.getOwner(),"Bob");
-        assertEquals(account.getBalance().get(RUB), BigDecimal.valueOf(100));
-        assertNull(account.getBalance().get(EUR));
-        assertNull(account.getBalance().get(USD));
+        var newAccount = Account.restore(state);
+        assertEquals(newAccount.getOwner(), "Bob");
+        assertEquals(newAccount.getBalance().get(RUB), BigDecimal.valueOf(100));
+        assertNull(newAccount.getBalance().get(EUR));
+        assertNull(newAccount.getBalance().get(USD));
     }
 
 }
