@@ -12,32 +12,26 @@ import java.util.Map;
 public class ProxyInvocationHandler<T> implements InvocationHandler {
 
     private final T obj;
-    private Map<String, Object> cache;
-    List<String> cached;
-    List<String> mutators;
+    private Map<Method, Object> cache;
 
     public ProxyInvocationHandler(T obj) {
         this.obj = obj;
         cache = new HashMap<>();
-        cached = Arrays.stream(obj.getClass().getMethods()).filter(m -> m.isAnnotationPresent(Cache.class))
-                .map(Method::getName).toList();
-        mutators = Arrays.stream(obj.getClass().getMethods()).filter(m -> m.isAnnotationPresent(Mutator.class))
-                .map(Method::getName).toList();
     }
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        if (cached.contains(method.getName())) {
-            if (cache.get(method.getName()) == null) {
+        if (method.isAnnotationPresent(Cache.class)) {
+            if (cache.get(method) == null) {
                 Object result = method.invoke(obj, args);
-                cache.put(method.getName(), result);
+                cache.put(method, result);
                 return result;
             } else {
-                return cache.get(method.getName());
+                return cache.get(method);
             }
-        } else if (mutators.contains(method.getName())) {
+        } else if (method.isAnnotationPresent(Mutator.class)) {
             cache.clear();
-        } else if (method.getName().equals("getCache")) {
+        } else if (method.isAnnotationPresent(CacheGetter.class)) {
             return Collections.unmodifiableMap(cache);
         }
         return method.invoke(obj, args);
