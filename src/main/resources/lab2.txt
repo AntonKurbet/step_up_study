@@ -1,0 +1,121 @@
+Account.java
+------
+package study.stepup.lab2;
+
+import lombok.AllArgsConstructor;
+
+@AllArgsConstructor
+public class Account implements CachedAccount {
+    private String currency;
+    private int sum;
+    @Override
+    public String getCurrencyWithSum() {
+        return sum + " " + currency;
+    }
+    @Override
+    public void setCurrency(String currency) {
+        this.currency = currency;
+    }
+    @Override
+    public void setSum(int sum) {
+        this.sum = sum;
+    }
+}
+
+Cache.java
+-------
+package study.stepup.lab2;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+public @interface Cache {}
+
+CachedAccount.java
+---------
+package study.stepup.lab2;
+
+import java.util.Map;
+
+public interface CachedAccount {
+    @Cache
+    String getCurrencyWithSum();
+    @Mutator
+    void setCurrency(String currency) ;
+    @Mutator
+    void setSum(int sum) ;
+    @CacheGetter
+    default Map<String, Object> getCache() {return null;}
+}
+
+Mutator.class
+------------
+package study.stepup.lab2;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+public @interface Mutator {}
+
+ProxyInvocationHandler.java
+--------
+package study.stepup.lab2;
+
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class ProxyInvocationHandler<T> implements InvocationHandler {
+    private final T obj;
+    private Map<Method, Object> cache;
+
+    public ProxyInvocationHandler(T obj) {
+        this.obj = obj;
+        cache = new HashMap<>();
+    }
+
+    @Override
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        if (method.isAnnotationPresent(Cache.class)) {
+            if (cache.get(method) == null) {
+                Object result = method.invoke(obj, args);
+                cache.put(method, result);
+                return result;
+            } else {
+                return cache.get(method);
+            }
+        } else if (method.isAnnotationPresent(Mutator.class)) {
+            cache.clear();
+        } else if (method.isAnnotationPresent(CacheGetter.class)) {
+            return Collections.unmodifiableMap(cache);
+        }
+        return method.invoke(obj, args);
+    }
+}
+
+Utils.java
+---------
+package study.stepup.lab2;
+
+import java.lang.reflect.Proxy;
+
+public class Utils {
+    public static <T, O> T cache(O obj) {
+        ClassLoader objClassLoader = obj.getClass().getClassLoader();
+        Class[] interfaces = obj.getClass().getInterfaces();
+        T proxyObj = (T) Proxy.newProxyInstance(objClassLoader, interfaces, new ProxyInvocationHandler(obj));
+        return proxyObj;
+    }
+}

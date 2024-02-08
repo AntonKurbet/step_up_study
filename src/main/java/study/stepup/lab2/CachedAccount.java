@@ -14,5 +14,4 @@ public interface CachedAccount {
         return null;
     }
 
-    ;
 }

@@ -2,8 +2,6 @@ package study.stepup.lab2;
 
 import lombok.AllArgsConstructor;
 
-import java.util.Map;
-
 @AllArgsConstructor
 public class Account implements CachedAccount {
     private String currency;
