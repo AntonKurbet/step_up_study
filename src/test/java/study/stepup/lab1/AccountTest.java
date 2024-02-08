@@ -1,6 +1,5 @@
-import inno.tech.Account;
-import inno.tech.AccountState;
-import inno.tech.Currency;
+package study.stepup.lab1;
+
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -9,11 +8,10 @@ import java.math.BigDecimal;
 import java.security.InvalidParameterException;
 import java.util.HashMap;
 import java.util.InvalidPropertiesFormatException;
-import java.util.Map;
 
-import static inno.tech.Currency.EUR;
-import static inno.tech.Currency.RUB;
-import static inno.tech.Currency.USD;
+import static study.stepup.lab1.Currency.EUR;
+import static study.stepup.lab1.Currency.RUB;
+import static study.stepup.lab1.Currency.USD;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;

@@ -162,9 +162,9 @@ public class SetOwner implements Operation{
     }
 }
 
-AccountTest.java
+study.stepup.lab1.AccountTest.java
 --------
-import inno.tech.Account;
+import study.stepup.lab1.Account;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 
@@ -172,16 +172,16 @@ import java.math.BigDecimal;
 import java.security.InvalidParameterException;
 import java.util.InvalidPropertiesFormatException;
 
-import static inno.tech.Currency.EUR;
-import static inno.tech.Currency.RUB;
-import static inno.tech.Currency.USD;
+import static study.stepup.lab1.Currency.EUR;
+import static study.stepup.lab1.Currency.RUB;
+import static study.stepup.lab1.Currency.USD;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class AccountTest {
+public class study.stepup.lab1.AccountTest {
     @Test
     @SneakyThrows
     void happyTest() {

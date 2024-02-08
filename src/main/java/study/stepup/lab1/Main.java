@@ -1,4 +1,4 @@
-package inno.tech;
+package study.stepup.lab1;
 
 public class Main {
     public static int sign(int x) {

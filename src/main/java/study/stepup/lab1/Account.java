@@ -1,4 +1,4 @@
-package inno.tech;
+package study.stepup.lab1;
 
 import lombok.Getter;
 
