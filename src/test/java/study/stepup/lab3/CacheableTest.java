@@ -1,6 +1,8 @@
 package study.stepup.lab3;
 
 import lombok.SneakyThrows;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -17,15 +19,22 @@ public class CacheableTest {
         cachedAccount = CacheUtils.cache(account);
     }
 
+    @BeforeAll
+    static void start() {
+        CacheUtils.startCleaner();
+    }
+    @AfterAll
+    static void stop() {
+        CacheUtils.stopCleaner();
+    }
+
     @Test
-    @SneakyThrows
     void testCachedGet() {
         cachedAccount.getCurrencyWithSum();
         assertFalse(cachedAccount.getCache().isEmpty());
     }
 
     @Test
-    @SneakyThrows
     void testCachedGet2() {
         cachedAccount.isCurrency("USD");
         assertFalse(cachedAccount.getCache().isEmpty());
@@ -35,7 +44,7 @@ public class CacheableTest {
     @SneakyThrows
     void testCacheClear() {
         cachedAccount.getCurrencyWithSum();
-        Thread.sleep(1000);
+        Thread.sleep(1200);
         assertTrue(cachedAccount.getCache().isEmpty());
     }
 
@@ -43,7 +52,7 @@ public class CacheableTest {
     @SneakyThrows
     void testCacheClear2() {
         cachedAccount.isCurrency("USD");
-        Thread.sleep(1000);
+        Thread.sleep(1200);
         assertTrue(cachedAccount.getCache().isEmpty());
     }
 
