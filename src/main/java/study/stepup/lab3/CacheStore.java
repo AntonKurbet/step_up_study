@@ -5,8 +5,8 @@ import lombok.Getter;
 import lombok.extern.java.Log;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @AllArgsConstructor
 @Getter
@@ -25,31 +25,31 @@ class CacheResult {
 
 @Log
 public class CacheStore {
-    private final Map<String, CacheResult> cache = new HashMap<>();
+    private final Map<String, CacheResult> cache = new ConcurrentHashMap<>();
 
-    public void put(String key, Object value, long ttl) {
+    synchronized public void put(String key, Object value, long ttl) {
         cache.put(key, new CacheResult(System.currentTimeMillis() + ttl, value));
         log.info(cache.toString());
     }
 
-    public void remove(String key) {
+    synchronized public void remove(String key) {
         cache.remove(key);
         log.info(cache.toString());
     }
 
-    public Object get(String key, long ttl) {
+    synchronized public Object get(String key, long ttl) {
         if (cache.get(key) == null) return null;
         cache.get(key).addTtl(ttl);
         log.info(cache.get(key).toString());
         return cache.get(key).getValue();
     }
 
-    public void clear() {
+    synchronized public void clear() {
         cache.clear();
         log.info(cache.toString());
     }
 
-    public Map<String, CacheResult> info() {
+    synchronized public Map<String, CacheResult> info() {
         return Collections.unmodifiableMap(cache);
     }
 }

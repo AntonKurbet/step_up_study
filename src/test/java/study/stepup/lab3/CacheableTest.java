@@ -64,4 +64,21 @@ public class CacheableTest {
         cachedAccount.getCurrencyWithSum();
         assertFalse(cachedAccount.getCache().isEmpty());
     }
+
+    @Test
+    @SneakyThrows
+    void concurrentTest() {
+        var account2 = new Account("USD", 100);
+        CachedAccount cachedAccount2 = CacheUtils.cache(account2);
+        cachedAccount.getCurrencyWithSum();
+        cachedAccount2.getCurrencyWithSum();
+        cachedAccount.getCurrencyWithSum();
+        cachedAccount2.getCurrencyWithSum();
+        Thread.sleep(1000);
+        cachedAccount.getCurrencyWithSum();
+        cachedAccount2.getCurrencyWithSum();
+        Thread.sleep(800);
+        cachedAccount.getCurrencyWithSum();
+        cachedAccount2.getCurrencyWithSum();
+    }
 }
