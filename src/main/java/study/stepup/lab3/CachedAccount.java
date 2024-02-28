@@ -7,13 +7,7 @@ public interface CachedAccount {
     String getCurrencyWithSum();
     @Cache(1000)
     boolean isCurrency(String currency);
-    @Mutator
     void setCurrency(String currency) ;
-    @Mutator
     void setSum(int sum) ;
-    @CacheGetter
-    default Map<String, Object> getCache() {
-        return null;
-    }
 
 }
