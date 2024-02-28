@@ -49,113 +49,55 @@ public @interface Cache {
     long value();
 }
 
-CacheCleaner.java
+CacheCleanup.java
 ---------
 package study.stepup.lab3;
 
-import lombok.extern.java.Log;
-
-@Log
-public class CacheCleaner implements Runnable {
-    private final CacheStore cacheStore;
-    private final long sleepTime;
-    private volatile boolean alive = true;
-
-    public CacheCleaner(CacheStore cacheStore, long sleepTime) {
-        this.cacheStore = cacheStore;
-        this.sleepTime = sleepTime;
-    }
-
-    public void run() {
-        log.info("run cache cleaner");
-        while (alive) {
-            for (var entry : cacheStore.info().entrySet()) {
-                if (entry.getValue().getTtl() < System.currentTimeMillis()) {
-                    log.info("remove:" + entry.getKey());
-                    cacheStore.remove(entry.getKey());
-                }
-            }
-            try {
-                Thread.sleep(sleepTime);
-            } catch (InterruptedException e) {
-                alive = false;
-                log.info("stop cache cleaner");
-            }
-        }
-    }
-
+public interface CacheCleanup {
+    void callDeferred(Runnable runnable, long delay);
 }
 
-CacheGetter.java
----------
-package study.stepup.lab3;
-
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
-public @interface CacheGetter {
-}
-
-CacheStore.java
+CacheInvocationHandler.java
 ---------
 package study.stepup.lab3;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.extern.java.Log;
 
-import java.util.Collections;
-import java.util.Map;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
 
-@AllArgsConstructor
-@Getter
-class CacheResult {
-    private long ttl;
-    private Object value;
-
-    public void addTtl(long ttl) {
-        this.ttl = System.currentTimeMillis() + ttl;
-    }
-    @Override
-    public String toString() {
-       return value.toString() + ":" + ttl;
-    }
-}
-
 @Log
-public class CacheStore {
-    private final Map<String, CacheResult> cache = new ConcurrentHashMap<>();
+@AllArgsConstructor
+public class CacheInvocationHandler<T> implements InvocationHandler {
 
-    synchronized public void put(String key, Object value, long ttl) {
-        cache.put(key, new CacheResult(System.currentTimeMillis() + ttl, value));
-        log.info(cache.toString());
+    private final T obj;
+    private final CacheCleanup cacheCleanup;
+    private final ConcurrentHashMap<String,Object> store = new ConcurrentHashMap<>();
+
+    @Override
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+
+        String hash = String.format("%d-%d-%d", obj.hashCode(), method.hashCode(), Arrays.hashCode(args));
+        if (method.isAnnotationPresent(Cache.class)) {
+            var ttl = method.getAnnotation(Cache.class).value();
+            var cacheValue = store.get(hash);
+            if (cacheValue == null) {
+                Object result = method.invoke(obj, args);
+                store.put(hash, result);
+                cacheCleanup.callDeferred(()->store.remove(hash), ttl);
+                log.info("put:" + result.toString());
+                return result;
+            } else {
+                log.info("get:" + cacheValue);
+                return cacheValue;
+            }
+        }
+        return method.invoke(obj, args);
     }
 
-    synchronized public void remove(String key) {
-        cache.remove(key);
-        log.info(cache.toString());
-    }
-
-    synchronized public Object get(String key, long ttl) {
-        if (cache.get(key) == null) return null;
-        cache.get(key).addTtl(ttl);
-        log.info(cache.get(key).toString());
-        return cache.get(key).getValue();
-    }
-
-    synchronized public void clear() {
-        cache.clear();
-        log.info(cache.toString());
-    }
-
-    synchronized public Map<String, CacheResult> info() {
-        return Collections.unmodifiableMap(cache);
-    }
 }
 
 CacheUtils.java
@@ -166,22 +108,11 @@ import java.lang.reflect.Proxy;
 
 public class CacheUtils {
 
-    public static final int SLEEP_TIME = 50;
-    private static final CacheStore cacheStore = new CacheStore();
-    private static final Thread t = new Thread(new CacheCleaner(cacheStore, SLEEP_TIME));
-
-    public static <T, O> T cache(O obj) {
+    public static <T, O> T cache(O obj, CacheCleanup cacheCleanup) {
         ClassLoader objClassLoader = obj.getClass().getClassLoader();
         Class[] interfaces = obj.getClass().getInterfaces();
-        T proxyObj = (T) Proxy.newProxyInstance(objClassLoader, interfaces, new ProxyInvocationHandler(obj, cacheStore));
+        T proxyObj = (T) Proxy.newProxyInstance(objClassLoader, interfaces, new CacheInvocationHandler(obj, cacheCleanup));
         return proxyObj;
-    }
-
-    public static void startCleaner() {
-        t.start();
-    }
-    public static void stopCleaner() {
-        t.interrupt();
     }
 
 }
@@ -197,159 +128,49 @@ public interface CachedAccount {
     String getCurrencyWithSum();
     @Cache(1000)
     boolean isCurrency(String currency);
-    @Mutator
     void setCurrency(String currency) ;
-    @Mutator
     void setSum(int sum) ;
-    @CacheGetter
-    default Map<String, Object> getCache() {
-        return null;
-    }
 
 }
 
-Mutator.java
+Cleaner.java
 ---------
 package study.stepup.lab3;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.util.ArrayList;
+import java.util.List;
 
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
-public @interface Mutator {
-}
-
-ProxyInvocationHandler.java
----------
-package study.stepup.lab3;
-
-import lombok.AllArgsConstructor;
-import lombok.extern.java.Log;
-
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.util.Arrays;
-
-@AllArgsConstructor
-@Log
-public class ProxyInvocationHandler<T> implements InvocationHandler {
-
-    private final T obj;
-    private final CacheStore cache;
+public class Cleaner implements CacheCleanup{
+    List<Runnable> queue = new ArrayList<>();
 
     @Override
-    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-
-        String hash = String.format("%d-%d-%d", obj.hashCode(), method.hashCode(), Arrays.hashCode(args));
-        if (method.isAnnotationPresent(Cache.class)) {
-            var ttl = method.getAnnotation(Cache.class).value();
-            var cacheValue = cache.get(hash, ttl);
-            if (cacheValue == null) {
-                Object result = method.invoke(obj, args);
-                cache.put(hash, result, ttl);
-                log.info("put:" + result.toString());
-                return result;
-            } else {
-                log.info("get:" + cacheValue);
-                return cacheValue;
-            }
-        } else if (method.isAnnotationPresent(Mutator.class)) {
-            log.info("clear cache");
-            cache.clear();
-        } else if (method.isAnnotationPresent(CacheGetter.class)) {
-            return cache.info();
-        }
-        return method.invoke(obj, args);
+    public void callDeferred(Runnable runnable, long delay) {
+        queue.add(runnable);
     }
 
+    public void flush() {
+        queue.forEach(Runnable::run);
+    }
 }
 
-CacheableTest.java
-----------
+ThreadPoolCleanup.java
+---------
 package study.stepup.lab3;
 
-import lombok.SneakyThrows;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+public class ThreadPoolCleanup implements CacheCleanup {
 
-public class CacheableTest {
-    Account account;
-    CachedAccount cachedAccount;
+    final ScheduledExecutorService executorService;
 
-    @BeforeEach
-    void init(){
-        account = new Account("RUB", 100);
-        cachedAccount = CacheUtils.cache(account);
+    public ThreadPoolCleanup(ScheduledExecutorService executorService) {
+        this.executorService = executorService;
     }
 
-    @BeforeAll
-    static void start() {
-        CacheUtils.startCleaner();
-    }
-    @AfterAll
-    static void stop() {
-        CacheUtils.stopCleaner();
-    }
-
-    @Test
-    void testCachedGet() {
-        cachedAccount.getCurrencyWithSum();
-        assertFalse(cachedAccount.getCache().isEmpty());
-    }
-
-    @Test
-    void testCachedGet2() {
-        cachedAccount.isCurrency("USD");
-        assertFalse(cachedAccount.getCache().isEmpty());
-    }
-
-    @Test
-    @SneakyThrows
-    void testCacheClear() {
-        cachedAccount.getCurrencyWithSum();
-        Thread.sleep(1200);
-        assertTrue(cachedAccount.getCache().isEmpty());
-    }
-
-    @Test
-    @SneakyThrows
-    void testCacheClear2() {
-        cachedAccount.isCurrency("USD");
-        Thread.sleep(1200);
-        assertTrue(cachedAccount.getCache().isEmpty());
-    }
-
-    @Test
-    @SneakyThrows
-    void testCacheLongLife() {
-        cachedAccount.getCurrencyWithSum();
-        Thread.sleep(800);
-        cachedAccount.getCurrencyWithSum();
-        assertFalse(cachedAccount.getCache().isEmpty());
-    }
-
-    @Test
-    @SneakyThrows
-    void concurrentTest() {
-        var account2 = new Account("USD", 100);
-        CachedAccount cachedAccount2 = CacheUtils.cache(account2);
-        cachedAccount.getCurrencyWithSum();
-        cachedAccount2.getCurrencyWithSum();
-        cachedAccount.getCurrencyWithSum();
-        cachedAccount2.getCurrencyWithSum();
-        Thread.sleep(1000);
-        cachedAccount.getCurrencyWithSum();
-        cachedAccount2.getCurrencyWithSum();
-        Thread.sleep(800);
-        cachedAccount.getCurrencyWithSum();
-        cachedAccount2.getCurrencyWithSum();
+    @Override
+    public void callDeferred(Runnable runnable, long delay) {
+        executorService.schedule(runnable, delay, TimeUnit.MILLISECONDS);
     }
 }
+
