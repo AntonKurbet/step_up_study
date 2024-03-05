@@ -1,5 +1,6 @@
 package stepup.study.services.impl;
 
+import stepup.study.aspect.LogTransformation;
 import stepup.study.dto.LoginDto;
 import stepup.study.services.DataTransformationService;
 import stepup.study.services.ErrorLogWriterService;
@@ -13,6 +14,7 @@ import java.util.List;
 @Slf4j
 @Service
 @AllArgsConstructor
+@LogTransformation
 public class LoginAccessDateTransformService implements DataTransformationService<LoginDto> {
     private final ErrorLogWriterService errorLogWriterService;
 
