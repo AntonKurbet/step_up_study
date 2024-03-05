@@ -4,10 +4,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
 import org.springframework.aop.aspectj.MethodInvocationProceedingJoinPoint;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -15,11 +16,11 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 @Slf4j
 public class LoggingAspect {
-    private final ConcurrentHashMap<Class<?>, LocalDateTime> timing = new ConcurrentHashMap<>();
-    @After("execution(* stepup.study.services.DataTransformationService.*(..))")
+    private final ConcurrentHashMap<Class<?>, ZonedDateTime> timing = new ConcurrentHashMap<>();
+    @Before("execution(* stepup.study.services.DataTransformationService.*(..))")
     public void logBeforeAllMethods(JoinPoint joinPoint) {
         if (joinPoint.getTarget().getClass().isAnnotationPresent(LogTransformation.class)){
-            timing.put(joinPoint.getTarget().getClass(),LocalDateTime.now());
+            timing.put(joinPoint.getTarget().getClass(),ZonedDateTime.now());
         }
     }
     @After("execution(* stepup.study.services.DataTransformationService.*(..))")

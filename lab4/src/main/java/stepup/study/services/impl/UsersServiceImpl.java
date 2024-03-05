@@ -31,7 +31,7 @@ public class UsersServiceImpl implements UsersService {
     @Override
     public List<UserDto> readData(String... args) {
         List<UserDto> records = new ArrayList<>();
-        try (CSVReader csvReader = new CSVReader(new FileReader(args[0]))) {
+        try (var csvReader = new CSVReader(new FileReader(args[0]))) {
             String[] values;
             while ((values = csvReader.readNext()) != null) {
                 records.add(toDto(values));
@@ -48,7 +48,7 @@ public class UsersServiceImpl implements UsersService {
         return new UserDto(id, data[1], data[2]);
     }
 
-    public User toEntity(UserDto user) {
+    private User toEntity(UserDto user) {
         var result = new User();
         result.setId(user.getId());
         result.setUsername(user.getUsername());

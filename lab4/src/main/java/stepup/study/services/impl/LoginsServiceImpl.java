@@ -31,7 +31,7 @@ public class LoginsServiceImpl implements LoginsService {
     @Override
     public List<LoginDto> readData(String... args) {
         List<LoginDto> records = new ArrayList<>();
-        try (CSVReader csvReader = new CSVReader(new FileReader(args[0]))) {
+        try (var csvReader = new CSVReader(new FileReader(args[0]))) {
             String[] values;
             while ((values = csvReader.readNext()) != null) {
                 records.add(toDto(values));

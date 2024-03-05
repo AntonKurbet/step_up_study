@@ -5,7 +5,7 @@ import lombok.experimental.UtilityClass;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -28,9 +28,9 @@ public class Tools {
         }
     }
 
-    public static LocalDateTime tryParseDate(String text) {
+    public static ZonedDateTime tryParseDate(String text) {
         try {
-            return LocalDateTime.parse(text);
+            return ZonedDateTime.parse(text);
         } catch (DateTimeParseException e) {
             return null;
         }

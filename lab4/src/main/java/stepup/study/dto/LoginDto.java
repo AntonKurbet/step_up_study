@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @Data
 public class LoginDto {
     private Integer id;
-    private LocalDateTime accessDate;
+    private ZonedDateTime accessDate;
     private Integer userId;
     private String application;
 }

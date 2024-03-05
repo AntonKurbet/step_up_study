@@ -1,5 +1,11 @@
 package stepup.study;
 
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.test.context.ActiveProfiles;
 import stepup.study.dto.LoginDto;
 import stepup.study.dto.UserDto;
 import stepup.study.repositories.LoginRepository;
@@ -8,15 +14,9 @@ import stepup.study.services.DataTransformationService;
 import stepup.study.services.LoginsService;
 import stepup.study.services.UsersService;
 import stepup.study.services.impl.MainService;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.test.context.ActiveProfiles;
 
 import java.nio.file.Paths;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,7 +28,7 @@ class StepUpStudy4ApplicationTests {
 
     private static final String PATH = Paths.get("src", "test", "resources").toAbsolutePath().toString();
     public static final List<UserDto> USER_LIST = List.of(new UserDto(123, "userName", "user name"));
-    public static final List<LoginDto> LOGIN_LIST = List.of(new LoginDto(123, LocalDateTime.now(),456, "web"));
+    public static final List<LoginDto> LOGIN_LIST = List.of(new LoginDto(123, ZonedDateTime.now(),456, "web"));
 
     @Autowired
     protected UsersService usersService;

@@ -8,7 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 @Entity
 @Table(name = "logins")
@@ -19,7 +19,7 @@ public class Login {
     @Id
     private int id;
     @Column(name = "access_date")
-    private LocalDateTime accessDate;
+    private ZonedDateTime accessDate;
     @Column(name = "user_id")
     private int userId;
     private String application;
