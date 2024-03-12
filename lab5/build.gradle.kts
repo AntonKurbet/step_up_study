@@ -2,10 +2,11 @@ plugins {
     id("java")
     id("org.springframework.boot") version "3.1.9"
     id("io.spring.dependency-management") version "1.1.4"
+    `java-library`
 }
 
 group = "inno.tech"
-version = "1.0-SNAPSHOT"
+version = "0.1.0"
 
 configurations {
     compileOnly {
@@ -18,10 +19,6 @@ repositories {
 }
 
 dependencies {
-    repositories {
-        mavenCentral()
-    }
-
     dependencies {
         implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0")
         implementation("org.springframework.boot:spring-boot-starter-web")
@@ -32,8 +29,10 @@ dependencies {
         annotationProcessor("org.projectlombok:lombok")
         testImplementation("org.springframework.boot:spring-boot-starter-test")
     }
+
 }
 
 tasks.test {
     useJUnitPlatform()
 }
+
