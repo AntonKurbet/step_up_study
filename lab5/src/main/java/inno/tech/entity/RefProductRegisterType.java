@@ -6,7 +6,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
@@ -18,10 +17,10 @@ public class RefProductRegisterType {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long internalId;
+    private Integer internalId;
     private String value;
     private String registerTypeName;
-//    private String productClassCode;
+    //    private String productClassCode;
     private LocalDateTime registerTypeStartDate;
     private LocalDateTime registerTypeEndDate;
     private String accountType;

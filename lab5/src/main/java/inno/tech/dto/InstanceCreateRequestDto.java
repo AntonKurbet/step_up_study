@@ -1,5 +1,6 @@
 package inno.tech.dto;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -7,12 +8,13 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 @NoArgsConstructor
 @Getter
 public class InstanceCreateRequestDto {
 
-    private Long instanceId;
+    private Integer instanceId;
     @NotBlank
     private String productType;
     @NotBlank
@@ -35,7 +37,7 @@ public class InstanceCreateRequestDto {
     private BigDecimal taxPercentageRate;
     private BigDecimal technicalOverdraftLimitAmount;
     @NotNull
-    private Long contractId;
+    private Integer contractId;
     @NotBlank
     private String BranchCode;
     @NotBlank
@@ -43,4 +45,8 @@ public class InstanceCreateRequestDto {
     @NotBlank
     private String urgencyCode;
     private Integer ReferenceCode;
+
+    private List<AdditionalPropertiesVip> additionalPropertiesVip;
+    @Valid
+    private List<InstanceArrangement> instanceArrangement;
 }

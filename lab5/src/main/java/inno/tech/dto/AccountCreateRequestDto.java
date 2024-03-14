@@ -9,7 +9,7 @@ public class AccountCreateRequestDto {
 
     @Valid
     @NotNull
-    private Long instanceId;
+    private Integer instanceId;
     private String registryTypeCode;
     private String accountType;
     private String currencyCode;

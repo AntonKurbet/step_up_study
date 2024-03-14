@@ -5,6 +5,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
@@ -13,16 +14,17 @@ import java.time.LocalDateTime;
 @Entity(name = "tpp_product")
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-//    private Long agreementId;
-    private Long productCodeId;
-    private Long clientId;
+    private Integer id;
+//    private Integer agreementId;
+    private Integer productCodeId;
+    private Integer clientId;
     private String type;
     private String number;
-    private Long priority;
+    private Integer priority;
     private LocalDateTime dateOfConclusion;
     private LocalDateTime startDateTime;
     private LocalDateTime endDateTime;

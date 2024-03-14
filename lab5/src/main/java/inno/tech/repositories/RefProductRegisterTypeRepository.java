@@ -5,6 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-public interface RefProductRegisterTypeRepository extends JpaRepository<RefProductRegisterType, Long> {
+public interface RefProductRegisterTypeRepository extends JpaRepository<RefProductRegisterType, Integer> {
     Optional<RefProductRegisterType> findByValue(String value);
 }

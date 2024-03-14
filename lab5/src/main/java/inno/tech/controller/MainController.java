@@ -5,8 +5,10 @@ import inno.tech.dto.AccountCreateResponseDataDto;
 import inno.tech.dto.AccountCreateResponseDto;
 import inno.tech.dto.InstanceCreateRequestDto;
 import inno.tech.dto.InstanceCreateResponseDto;
+import inno.tech.exceptions.AgreementAlreadyPresentException;
 import inno.tech.exceptions.ContractNumberExistException;
 import inno.tech.exceptions.ProductCodeNotFountException;
+import inno.tech.exceptions.ProductInstanceNotFoundException;
 import inno.tech.services.ProductInstanceService;
 import inno.tech.services.ProductRegisterService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -68,7 +70,9 @@ public class MainController {
                     @ApiResponse(responseCode = "500", description = "Server error")}
     )
     ResponseEntity<InstanceCreateResponseDto> createInstance(@RequestBody @Valid InstanceCreateRequestDto request)
-            throws ContractNumberExistException, ProductCodeNotFountException {
+            throws ContractNumberExistException, ProductCodeNotFountException, ProductInstanceNotFoundException,
+            AgreementAlreadyPresentException
+    {
             var result = productInstanceService.create(request);
             return ResponseEntity.ok(result);
     }
