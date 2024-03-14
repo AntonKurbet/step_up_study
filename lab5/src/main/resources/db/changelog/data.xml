@@ -1,0 +1,111 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <changeSet author="antonkurbet (generated)" created="2024-03-15 01:28+0300" id="1710455300681-1">
+        <insert tableName="tpp_ref_account_type">
+            <column name="internal_id" valueNumeric="1"/>
+            <column name="value" value="Клиентский"/>
+        </insert>
+        <insert tableName="tpp_ref_account_type">
+            <column name="internal_id" valueNumeric="2"/>
+            <column name="value" value="Внутрибанковский"/>
+        </insert>
+    </changeSet>
+    <changeSet author="antonkurbet (generated)" created="2024-03-15 01:28+0300" id="1710455300681-2">
+        <insert tableName="tpp_ref_product_class">
+            <column name="internal_id" valueNumeric="1"/>
+            <column name="value" value="03.012.002"/>
+            <column name="gbi_code" value="03"/>
+            <column name="gbi_name" value="Розничный бизнес"/>
+            <column name="product_row_code" value="012"/>
+            <column name="product_row_name" value="Драг. металлы"/>
+            <column name="subclass_code" value="002"/>
+            <column name="subclass_name" value="Хранение"/>
+        </insert>
+        <insert tableName="tpp_ref_product_class">
+            <column name="internal_id" valueNumeric="2"/>
+            <column name="value" value="02.001.005"/>
+            <column name="gbi_code" value="02"/>
+            <column name="gbi_name" value="Розничный бизнес"/>
+            <column name="product_row_code" value="001"/>
+            <column name="product_row_name" value="Сырье"/>
+            <column name="subclass_code" value="005"/>
+            <column name="subclass_name" value="Продажа"/>
+        </insert>
+    </changeSet>
+    <changeSet author="antonkurbet (generated)" created="2024-03-15 01:28+0300" id="1710455300681-3">
+        <insert tableName="tpp_ref_product_register_type">
+            <column name="internal_id" valueNumeric="1"/>
+            <column name="value" value="03.012.002_47533_ComSoLd"/>
+            <column name="register_type_name" value="Хранение ДМ."/>
+            <column name="product_class_code" value="03.012.002"/>
+            <column name="register_type_start_date"/>
+            <column name="register_type_end_date"/>
+            <column name="account_type" value="Клиентский"/>
+        </insert>
+        <insert tableName="tpp_ref_product_register_type">
+            <column name="internal_id" valueNumeric="2"/>
+            <column name="value" value="02.001.005_45343_CoDowFF"/>
+            <column name="register_type_name" value="Серебро. Выкуп."/>
+            <column name="product_class_code" value="02.001.005"/>
+            <column name="register_type_start_date"/>
+            <column name="register_type_end_date"/>
+            <column name="account_type" value="Клиентский"/>
+        </insert>
+    </changeSet>
+    <changeSet author="antonkurbet (generated)" created="2024-03-15 01:44+0300" id="1710456256398-4">
+        <insert tableName="account_pool">
+            <column name="id" valueNumeric="1"/>
+            <column name="branch_code" value="0022"/>
+            <column name="currency_code" value="800"/>
+            <column name="mdm_code" value="15"/>
+            <column name="priority_code" value="00"/>
+            <column name="registry_type_code" value="03.012.002_47533_ComSoLd"/>
+        </insert>
+        <insert tableName="account_pool">
+            <column name="id" valueNumeric="2"/>
+            <column name="branch_code" value="0021"/>
+            <column name="currency_code" value="500"/>
+            <column name="mdm_code" value="13"/>
+            <column name="priority_code" value="00"/>
+            <column name="registry_type_code" value="02.001.005_45343_CoDowFF"/>
+        </insert>
+    </changeSet>
+    <changeSet author="antonkurbet (generated)" created="2024-03-15 01:28+0300" id="1710455300681-6">
+        <insert tableName="account">
+            <column name="id" valueNumeric="1"/>
+            <column name="account_pool_id" valueNumeric="1"/>
+            <column name="account_number" value="475335516415314841861"/>
+            <column name="bussy" valueBoolean="false"/>
+        </insert>
+        <insert tableName="account">
+            <column name="id" valueNumeric="2"/>
+            <column name="account_pool_id" valueNumeric="1"/>
+            <column name="account_number" value="4753321651354151"/>
+            <column name="bussy" valueBoolean="false"/>
+        </insert>
+        <insert tableName="account">
+            <column name="id" valueNumeric="3"/>
+            <column name="account_pool_id" valueNumeric="1"/>
+            <column name="account_number" value="4753352543276345"/>
+            <column name="bussy" valueBoolean="false"/>
+        </insert>
+        <insert tableName="account">
+            <column name="id" valueNumeric="4"/>
+            <column name="account_pool_id" valueNumeric="2"/>
+            <column name="account_number" value="453432352436453276"/>
+            <column name="bussy" valueBoolean="false"/>
+        </insert>
+        <insert tableName="account">
+            <column name="id" valueNumeric="5"/>
+            <column name="account_pool_id" valueNumeric="2"/>
+            <column name="account_number" value="45343221651354151"/>
+            <column name="bussy" valueBoolean="false"/>
+        </insert>
+        <insert tableName="account">
+            <column name="id" valueNumeric="6"/>
+            <column name="account_pool_id" valueNumeric="2"/>
+            <column name="account_number" value="4534352543276345"/>
+            <column name="bussy" valueBoolean="false"/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>
