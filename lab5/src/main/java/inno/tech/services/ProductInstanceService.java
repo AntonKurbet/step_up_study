@@ -17,6 +17,7 @@ import inno.tech.repositories.AgreementRepository;
 import inno.tech.repositories.ProductRegisterRepository;
 import inno.tech.repositories.ProductRepository;
 import inno.tech.repositories.RefProductClassRepository;
+import inno.tech.repositories.RefProductRegisterTypeRepository;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -34,6 +35,7 @@ public class ProductInstanceService {
     ProductRegisterRepository productRegisterRepository;
     AccountPoolRepository accountPoolRepository;
     AgreementRepository agreementRepository;
+    private final RefProductRegisterTypeRepository refProductRegisterTypeRepository;
 
     public InstanceCreateResponseDto create(InstanceCreateRequestDto request) throws ContractNumberExistException, ProductCodeNotFountException, ProductInstanceNotFoundException, AgreementAlreadyPresentException {
         var registerIdList = new ArrayList<Integer>();
@@ -54,7 +56,7 @@ public class ProductInstanceService {
                 }
                 var product = new Product(
                         null,
-                        Integer.parseInt(request.getProductCode()),
+                        productClass.get().getInternalId(),
                         Integer.parseInt(request.getMdmCode()),
                         request.getProductType(),
                         request.getContractNumber(),

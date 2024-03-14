@@ -6,11 +6,13 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Entity(name = "account_pool")
 @Getter
+@NoArgsConstructor
 public class AccountPool {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
